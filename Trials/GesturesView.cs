@@ -5,58 +5,75 @@ namespace Uniq;
 
 public class GesturesView : ContentPage
 {
+    private GesturesNexus nexus;
+
     public GesturesView(GesturesNexus nexus)
     {
         BindingContext = this.nexus = nexus;
 
         Content = new HorizontalStackLayout
         {
-            new Label().Margins(0, 20, 0, 0).Text("Gestures"),
+            new Label().Margins(0, 20, 0, 0).Text("Gestures").TapGesture(TitleTapGestureEventHandler),
             new CollectionView()
                 .ItemTemplate(new ElementTemplate(this))
                 .Bind(CollectionView.ItemsSourceProperty, static (GesturesNexus n) => n.ElementCollection)
         };
-
     }
 
-    private GesturesNexus nexus;
-
+    private void TitleTapGestureEventHandler()
+    {
+        this.ShowPopup(new MessagePopup("Page popup"));
+    }
+        
     internal class ElementTemplate : DataTemplate
     {
         public ElementTemplate(GesturesView container) : base(() =>
         {
-            var label = new Label()
+            return new Label()
                 .BackgroundColor(Colors.Violet)
-                .Bind(Label.TextProperty, static (ElementNexus n) => n.StringValue);
-
-            TapGestureRecognizer tapGestureRecognizer = new TapGestureRecognizer();
-            tapGestureRecognizer.Tapped += TapGestureEventHandler;
-            label.GestureRecognizers.Add(tapGestureRecognizer);
-
-            return label;
+                .Bind(Label.TextProperty, static (ElementNexus n) => n.StringValue)
+                .TapGesture(ItemTapGestureEventHandler);
         })
-        {
-            this.container = container;
+        {            
+            ElementTemplate.container = container;
         }
 
-        private GesturesView container;
+        private static GesturesView container;
 
-        private static void TapGestureEventHandler<TappedEventArgs>(object source, TappedEventArgs args)
+        private static void ItemTapGestureEventHandler<TappedEventArgs>(object source, TappedEventArgs args)
         {
-            var l = (Label)source;
-            var p = (Page)(l.Parent);
-            ((Page)((Label)source).Parent).ShowPopup(new ElementPopup());
+            container.ShowPopup(new MessagePopup($"Popup for item {((Label)source).Text}"));
         }
     }
 
-    internal class ElementPopup : Popup
+    internal class MessagePopup : Popup
     {
-        public ElementPopup()
+        public MessagePopup(string message)
         {
             Content = new VerticalStackLayout
             {
-                new Label().Text("This is a popup")
+                new Label().Text(message)
             };
         }
+    }
+}
+
+public static class GesturesExtensions
+{
+    public static TGestureElement TapGesture<TGestureElement>(
+        this TGestureElement gestureElement,
+        EventHandler<TappedEventArgs>? onTapped = null,
+        int? numberOfTapsRequired = null
+    ) where TGestureElement : IGestureRecognizers
+    {
+        TapGestureRecognizer tapGestureRecognizer = new TapGestureRecognizer();
+        if (numberOfTapsRequired.HasValue)
+        {
+            tapGestureRecognizer.NumberOfTapsRequired = numberOfTapsRequired.Value;
+        }
+        tapGestureRecognizer.Tapped += onTapped;
+
+        gestureElement.GestureRecognizers.Add(tapGestureRecognizer);
+        return gestureElement;
     }
 }
