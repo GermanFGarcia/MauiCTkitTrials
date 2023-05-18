@@ -35,6 +35,9 @@ public class GesturesView : ContentPage
                 .TapGesture(ItemTapGestureEventHandler);
         })
         {            
+			// not a good idea to assign a parameter to a static field,
+			// the staic field will only hold the last assigned value,
+			// but in this class, by construction, that value is always the same container page
             ElementTemplate.container = container;
         }
 
