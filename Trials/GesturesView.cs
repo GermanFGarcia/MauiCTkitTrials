@@ -11,16 +11,20 @@ public class GesturesView : ContentPage
     {
         BindingContext = this.nexus = nexus;
 
-        Content = new HorizontalStackLayout
+        Content = new VerticalStackLayout
         {
-            new Label().Margins(0, 20, 0, 0).Text("Gestures").TapGesture(TitleTapGestureEventHandler),
+            new Label().Text("Title"),
+            new Button().Text("Button").Width(40).BindCommand(static (GesturesNexus n) => n.DoCommand),
+            new Label().Text("Gestures Event").TapGesture(TitleTapGestureEventHandler),
+            new Label().Text("Gestures command").BindTapGesture(nameof(GesturesNexus.DoCommand)),
+            new Label().Assign(out Label label).Text("Gestures command param").BindTapGesture(nameof(GesturesNexus.DoStringCommand), nexus, nameof(Label.Text), label),
             new CollectionView()
                 .ItemTemplate(new ElementTemplate(this))
                 .Bind(CollectionView.ItemsSourceProperty, static (GesturesNexus n) => n.ElementCollection)
         };
     }
 
-    private void TitleTapGestureEventHandler()
+    private void TitleTapGestureEventHandler<TappedEventArgs>(object source, TappedEventArgs args)
     {
         this.ShowPopup(new MessagePopup("Page popup"));
     }
@@ -58,25 +62,5 @@ public class GesturesView : ContentPage
                 new Label().Text(message)
             };
         }
-    }
-}
-
-public static class GesturesExtensions
-{
-    public static TGestureElement TapGesture<TGestureElement>(
-        this TGestureElement gestureElement,
-        EventHandler<TappedEventArgs>? onTapped = null,
-        int? numberOfTapsRequired = null
-    ) where TGestureElement : IGestureRecognizers
-    {
-        TapGestureRecognizer tapGestureRecognizer = new TapGestureRecognizer();
-        if (numberOfTapsRequired.HasValue)
-        {
-            tapGestureRecognizer.NumberOfTapsRequired = numberOfTapsRequired.Value;
-        }
-        tapGestureRecognizer.Tapped += onTapped;
-
-        gestureElement.GestureRecognizers.Add(tapGestureRecognizer);
-        return gestureElement;
     }
 }
