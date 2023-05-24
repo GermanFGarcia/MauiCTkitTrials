@@ -14,10 +14,19 @@ public class GesturesView : ContentPage
         Content = new VerticalStackLayout
         {
             new Label().Text("Title"),
-            new Button().Text("Button").Width(40).BindCommand(static (GesturesNexus n) => n.DoCommand),
+
+            // View handler
             new Label().Text("Gestures Event").TapGesture(TitleTapGestureEventHandler),
+
+            // VM command
+            new Button().Text("Button Command").Width(40).BindCommand(static (GesturesNexus n) => n.DoCommand),
             new Label().Text("Gestures command").BindTapGesture(nameof(GesturesNexus.DoCommand)),
+
+            // VM command + View parameter
             new Label().Assign(out Label label).Text("Gestures command param").BindTapGesture(nameof(GesturesNexus.DoStringCommand), nexus, nameof(Label.Text), label),
+            new Label().Text("Gestures command param").BindTapGesture(nameof(GesturesNexus.DoStringCommand), nexus, nameof(Label.Text), RelativeBindingSource.Self),
+
+            // Data Template
             new CollectionView()
                 .ItemTemplate(new ElementTemplate(this))
                 .Bind(CollectionView.ItemsSourceProperty, static (GesturesNexus n) => n.ElementCollection)

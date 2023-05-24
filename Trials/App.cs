@@ -5,9 +5,10 @@ namespace Uniq;
 
 internal static class Trial
 {
-    public enum Types { Bindings, Gestures }
+    public enum Types { Bindings, Gestures, Txedder }
 
-    public static readonly Types Type = Types.Gestures;
+    // case to run the app for
+    public static readonly Types Type = Types.Txedder;
 }
 
 /// <summary>
@@ -54,6 +55,12 @@ public static class CommonMauiApp
                 services.AddSingleton<GesturesNexus>();
                 services.AddSingleton<GesturesView>();
                 break;
+
+            case Trial.Types.Txedder:
+                services.AddSingleton<TxedderModel>();
+                services.AddSingleton<TxedderNexus>();
+                services.AddSingleton<TxedderView>();
+                break;
         }
 
         return builder;
@@ -82,7 +89,16 @@ internal class App : Application
                     var view = services.GetService<GesturesView>();
                     MainPage = view;
                 }
-                break;    
+                break;
+
+            case Trial.Types.Txedder:
+                {
+                    var model = services.GetService<TxedderModel>();
+                    var nexus = services.GetService<TxedderNexus>();
+                    var view = services.GetService<TxedderView>();
+                    MainPage = view;
+                }
+                break;
         }
     }
 }
