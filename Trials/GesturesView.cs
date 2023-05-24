@@ -14,21 +14,15 @@ public class GesturesView : ContentPage
         Content = new VerticalStackLayout
         {
             new Label().Text("Title"),
-
-            // View handler
+            new Button().Text("Button").Width(40).BindCommand(static (GesturesNexus n) => n.DoCommand),
             new Label().Text("Gestures Event").TapGesture(TitleTapGestureEventHandler),
-
-            // VM command
-            new Button().Text("Button Command").Width(40).BindCommand(static (GesturesNexus n) => n.DoCommand),
             new Label().Text("Gestures command").BindTapGesture(nameof(GesturesNexus.DoCommand)),
-
-            // VM command + View parameter
-            new Label().Assign(out Label label).Text("Gestures command param").BindTapGesture(nameof(GesturesNexus.DoStringCommand), nexus, nameof(Label.Text), label),
+            new Label()
+                .Assign(out Label label)
+                .Text("Gestures command param")
             new Label().Text("Gestures command param").BindTapGesture(nameof(GesturesNexus.DoStringCommand), nexus, nameof(Label.Text), RelativeBindingSource.Self),
-
-            // Data Template
             new CollectionView()
-                .ItemTemplate(new ElementTemplate(this))
+                .ItemTemplate(new ElementTemplate(this,nexus))
                 .Bind(CollectionView.ItemsSourceProperty, static (GesturesNexus n) => n.ElementCollection)
         };
     }
@@ -40,21 +34,25 @@ public class GesturesView : ContentPage
         
     internal class ElementTemplate : DataTemplate
     {
-        public ElementTemplate(GesturesView container) : base(() =>
+        public ElementTemplate(GesturesView container, GesturesNexus nexus) : base(() =>
         {
             return new Label()
+                .Assign(out Label label)
                 .BackgroundColor(Colors.Violet)
                 .Bind(Label.TextProperty, static (ElementNexus n) => n.StringValue)
-                .TapGesture(ItemTapGestureEventHandler);
+                .BindTapGesture(nameof(GesturesNexus.DoStringCommand), nexus, nameof(Label.Text), label);
+                ////.TapGesture(ItemTapGestureEventHandler);
         })
         {            
 			// not a good idea to assign a parameter to a static field,
 			// the staic field will only hold the last assigned value,
 			// but in this class, by construction, that value is always the same container page
             ElementTemplate.container = container;
+            ElementTemplate.nexus = nexus;
         }
 
         private static GesturesView container;
+        private static GesturesNexus nexus;
 
         private static void ItemTapGestureEventHandler<TappedEventArgs>(object source, TappedEventArgs args)
         {
